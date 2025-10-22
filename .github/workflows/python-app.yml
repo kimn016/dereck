@@ -1,20 +1,39 @@
-import time
+name: Python CI
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdrive_manager.chrome import ChromeDriverManager
+on:
+  push:
+  pull_request:
 
-driver = webdriver.Chrome(Service=ChromeService(ChromeDriverManager().install())
+jobs:
+  run-selenium:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-driver.get("https://www.google.com")
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-sdearch_box = driver.find_element(BY.NAME, 'q')
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
 
-search_box.send_keys('jennie')
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-search_box.submit()
-time.sleep(5)
+      - name: Run Selenium script (headless)
+        env:
+          CI: 'true'
+        run: |
+          python google_search_selenium.py
 
-driver.save_screentshot('search_results.png')
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: search_results
+          path: search_results.png
+          if-no-files-found: warn
 
-driver.quit()

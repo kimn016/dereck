@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 
 from selenium import webdriver
@@ -9,8 +10,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def main():
     options = webdriver.ChromeOptions()
-    # Uncomment to run without opening a window:
-    # options.add_argument("--headless=new")
+    # Auto-enable headless in CI or when HEADLESS=1
+    if os.getenv("CI") == "true" or os.getenv("HEADLESS") == "1":
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
@@ -30,4 +34,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
